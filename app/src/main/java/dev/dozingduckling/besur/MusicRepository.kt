@@ -32,12 +32,15 @@ class MusicRepository(private val contentResolver: ContentResolver)
 
             while (cursor.moveToNext())
             {
+                val id = cursor.getLong(idColumn)
+
                 music.add(
                         Music(
-                                id = cursor.getLong(idColumn),
+                                id = id,
                                 title = cursor.getString(titleColumn),
                                 artist = cursor.getString(artistColumn),
-                                album = cursor.getString(albumColumn)
+                                album = cursor.getString(albumColumn),
+                                uri = "${MediaStore.Audio.Media.EXTERNAL_CONTENT_URI}/$id"
                         )
                 )
             }
