@@ -52,9 +52,11 @@ class MainActivity : ComponentActivity()
 
         setContent {
             BesurTheme {
-                MusicList(music) { song ->
-                    playMusic(song)
-                }
+                MusicList(
+                        music = music,
+                        onSongClick = { song -> playMusic(song) },
+                        onPlayPauseClick = { tooglePlayPause() }
+                )
             }
         }
 
@@ -94,6 +96,18 @@ class MainActivity : ComponentActivity()
         player.play()
     }
 
+    private fun tooglePlayPause()
+    {
+        if (player.isPlaying)
+        {
+            player.pause()
+        }
+        else
+        {
+            player.play()
+        }
+    }
+
     override fun onDestroy()
     {
         player.release()
@@ -102,21 +116,29 @@ class MainActivity : ComponentActivity()
 }
 
 @Composable
-fun MusicList(music: List<Music>, onSongClick: (Music) -> Unit)
+fun MusicList(music: List<Music>, onSongClick: (Music) -> Unit, onPlayPauseClick: () -> Unit)
 {
-    LazyColumn(
+    Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(15.dp)
     ) {
-        items(music) { song ->
-            Column(
-                    modifier = Modifier.clickable { onSongClick(song) }
-            ) {
-                Text(song.title)
-                Text(song.artist)
+        LazyColumn(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(15.dp)
+        ) {
+            items(music) { song ->
+                Column(
+                        modifier = Modifier.clickable { onSongClick(song) }
+                ) {
+                    Text(song.title)
+                    Text(song.artist)
+                }
             }
         }
+        Text(
+                text = "Play / Pause",
+                modifier = Modifier.clickable { onPlayPauseClick() }
+        )
     }
 }
