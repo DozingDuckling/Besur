@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
+import androidx.compose.material3.Button
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,6 +31,7 @@ import dev.dozingduckling.besur.ui.theme.BesurTheme
 class MainActivity : ComponentActivity()
 {
     private var music by mutableStateOf<List<Music>>(emptyList())
+    private var isPlaying by mutableStateOf(false)
     private lateinit var musicRepository: MusicRepository
     private lateinit var player: ExoPlayer
 
@@ -54,6 +56,7 @@ class MainActivity : ComponentActivity()
             BesurTheme {
                 MusicList(
                         music = music,
+                        isPlaying = isPlaying,
                         onSongClick = { song -> playMusic(song) },
                         onPlayPauseClick = { tooglePlayPause() }
                 )
@@ -94,6 +97,7 @@ class MainActivity : ComponentActivity()
         player.setMediaItem(MediaItem.fromUri(song.uri))
         player.prepare()
         player.play()
+        isPlaying = true
     }
 
     private fun tooglePlayPause()
@@ -101,10 +105,12 @@ class MainActivity : ComponentActivity()
         if (player.isPlaying)
         {
             player.pause()
+            isPlaying = false
         }
         else
         {
             player.play()
+            isPlaying = true
         }
     }
 
@@ -116,7 +122,7 @@ class MainActivity : ComponentActivity()
 }
 
 @Composable
-fun MusicList(music: List<Music>, onSongClick: (Music) -> Unit, onPlayPauseClick: () -> Unit)
+fun MusicList(music: List<Music>, isPlaying: Boolean, onSongClick: (Music) -> Unit, onPlayPauseClick: () -> Unit)
 {
     Column(
             modifier = Modifier
@@ -136,9 +142,10 @@ fun MusicList(music: List<Music>, onSongClick: (Music) -> Unit, onPlayPauseClick
                 }
             }
         }
-        Text(
-                text = "Play / Pause",
-                modifier = Modifier.clickable { onPlayPauseClick() }
-        )
+        Button(
+                onClick = onPlayPauseClick
+        ) {
+            Text(if (isPlaying) "Pause" else "Play")
+        }
     }
 }
