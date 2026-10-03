@@ -11,6 +11,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -57,8 +58,10 @@ class MainActivity : ComponentActivity()
                 MusicList(
                         music = music,
                         isPlaying = isPlaying,
-                        onSongClick = { song -> playMusic(song) },
-                        onPlayPauseClick = { tooglePlayPause() }
+                        onSongClick = { song -> playMusic(music.indexOf((song))) },
+                        onPlayPauseClick = { tooglePlayPause() },
+                        onPreviousClick = { playPreviousMusic() },
+                        onNextClick = { playNextMusic() }
                 )
             }
         }
@@ -92,12 +95,37 @@ class MainActivity : ComponentActivity()
         music = musicRepository.getMusic()
     }
 
-    private fun playMusic(song: Music)
+    private fun playMusic(index: Int)
     {
-        player.setMediaItem(MediaItem.fromUri(song.uri))
+        player.setMediaItems(
+                music.map { song -> MediaItem.fromUri(song.uri) },
+                index,
+            0L
+        )
+
         player.prepare()
         player.play()
         isPlaying = true
+    }
+
+    private fun playPreviousMusic()
+    {
+        if (player.hasPreviousMediaItem())
+        {
+            player.seekToPreviousMediaItem()
+            player.play()
+            isPlaying = true
+        }
+    }
+
+    private fun playNextMusic()
+    {
+        if (player.hasPreviousMediaItem())
+        {
+            player.seekToPreviousMediaItem()
+            player.play()
+            isPlaying = true
+        }
     }
 
     private fun tooglePlayPause()
@@ -122,7 +150,13 @@ class MainActivity : ComponentActivity()
 }
 
 @Composable
-fun MusicList(music: List<Music>, isPlaying: Boolean, onSongClick: (Music) -> Unit, onPlayPauseClick: () -> Unit)
+fun MusicList(
+    music: List<Music>,
+    isPlaying: Boolean,
+    onSongClick: (Music) -> Unit,
+    onPlayPauseClick: () -> Unit,
+    onPreviousClick: () -> Unit,
+    onNextClick: () -> Unit)
 {
     Column(
             modifier = Modifier
@@ -142,10 +176,18 @@ fun MusicList(music: List<Music>, isPlaying: Boolean, onSongClick: (Music) -> Un
                 }
             }
         }
-        Button(
-                onClick = onPlayPauseClick
+        Row(
+                horizontalArrangement = Arrangement.spacedBy(15.dp)
         ) {
-            Text(if (isPlaying) "Pause" else "Play")
+            Button(onClick = onPreviousClick) {
+                Text("Previous")
+            }
+            Button(onClick = onPlayPauseClick) {
+                Text(if (isPlaying) "Pause" else "Play")
+            }
+            Button(onClick = onNextClick) {
+                Text("Next")
+            }
         }
     }
 }
