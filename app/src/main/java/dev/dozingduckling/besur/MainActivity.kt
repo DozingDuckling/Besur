@@ -1,47 +1,58 @@
 package dev.dozingduckling.besur
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.content.ContextCompat
 import dev.dozingduckling.besur.ui.theme.BesurTheme
 
-class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            BesurTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+class MainActivity : ComponentActivity()
+{
+    private val musicPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (granted)
+            {
+                // TODO: scan for music
             }
         }
+
+    override fun onCreate(savedInstanceState: Bundle?)
+    {
+        super.onCreate(savedInstanceState)
+
+        enableEdgeToEdge()
+
+        setContent {
+            BesurTheme {
+                Text("Besur")
+            }
+        }
+
+        requestMusicPermission()
     }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+    private fun requestMusicPermission()
+    {
+        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+        {
+            Manifest.permission.READ_MEDIA_AUDIO
+        }
+        else
+        {
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        }
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    BesurTheme {
-        Greeting("Android")
+        if (ContextCompat.checkSelfPermission(this,
+                    permission) != PackageManager.PERMISSION_GRANTED
+        )
+        {
+            musicPermissionLauncher.launch(permission)
+        }
     }
 }
