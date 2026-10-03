@@ -59,7 +59,7 @@ class MainActivity : ComponentActivity()
                         music = music,
                         isPlaying = isPlaying,
                         onSongClick = { song -> playMusic(music.indexOf((song))) },
-                        onPlayPauseClick = { tooglePlayPause() },
+                        onPlayPauseClick = { togglePlayPause() },
                         onPreviousClick = { playPreviousMusic() },
                         onNextClick = { playNextMusic() }
                 )
@@ -120,15 +120,15 @@ class MainActivity : ComponentActivity()
 
     private fun playNextMusic()
     {
-        if (player.hasPreviousMediaItem())
+        if (player.hasNextMediaItem())
         {
-            player.seekToPreviousMediaItem()
+            player.seekToNextMediaItem()
             player.play()
             isPlaying = true
         }
     }
 
-    private fun tooglePlayPause()
+    private fun togglePlayPause()
     {
         if (player.isPlaying)
         {
