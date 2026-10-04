@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
@@ -24,6 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
@@ -32,6 +34,7 @@ import dev.dozingduckling.besur.ui.theme.BesurTheme
 class MainActivity : ComponentActivity()
 {
     private var music by mutableStateOf<List<Music>>(emptyList())
+    private var currentSong by mutableStateOf<Music?>(null)
     private var isPlaying by mutableStateOf(false)
     private lateinit var musicRepository: MusicRepository
     private lateinit var player: ExoPlayer
@@ -57,6 +60,7 @@ class MainActivity : ComponentActivity()
             BesurTheme {
                 MusicList(
                         music = music,
+                        currentSong = currentSong,
                         isPlaying = isPlaying,
                         onSongClick = { song -> playMusic(music.indexOf((song))) },
                         onPlayPauseClick = { togglePlayPause() },
@@ -97,6 +101,8 @@ class MainActivity : ComponentActivity()
 
     private fun playMusic(index: Int)
     {
+        currentSong = music[index]
+
         player.setMediaItems(
                 music.map { song -> MediaItem.fromUri(song.uri) },
                 index,
@@ -114,6 +120,8 @@ class MainActivity : ComponentActivity()
         {
             player.seekToPreviousMediaItem()
             player.play()
+
+            currentSong = music[player.currentMediaItemIndex]
             isPlaying = true
         }
     }
@@ -124,6 +132,8 @@ class MainActivity : ComponentActivity()
         {
             player.seekToNextMediaItem()
             player.play()
+
+            currentSong = music[player.currentMediaItemIndex]
             isPlaying = true
         }
     }
@@ -152,6 +162,7 @@ class MainActivity : ComponentActivity()
 @Composable
 fun MusicList(
     music: List<Music>,
+    currentSong: Music?,
     isPlaying: Boolean,
     onSongClick: (Music) -> Unit,
     onPlayPauseClick: () -> Unit,
@@ -176,6 +187,23 @@ fun MusicList(
                 }
             }
         }
+
+        Column(
+                modifier = Modifier
+                    .padding(vertical = 25.dp)
+                    .size(300.dp, 50.dp)
+        ) {
+            Text(
+                    currentSong?.title ?: "Nothing Playing",
+                    fontSize = 18.sp,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+            )
+            Text(
+                    currentSong?.artist ?: "",
+                    fontSize = 18.sp
+            )
+        }
+
         Row(
                 horizontalArrangement = Arrangement.spacedBy(15.dp)
         ) {
