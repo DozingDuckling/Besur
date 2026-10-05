@@ -8,8 +8,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,11 +21,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.material3.Button
+import androidx.compose.material3.Slider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -36,6 +42,8 @@ class MainActivity : ComponentActivity()
     private var music by mutableStateOf<List<Music>>(emptyList())
     private var currentSong by mutableStateOf<Music?>(null)
     private var isPlaying by mutableStateOf(false)
+    private var currentPosition by mutableStateOf(0L)
+    private var duration by mutableStateOf(0L)
     private lateinit var musicRepository: MusicRepository
     private lateinit var player: ExoPlayer
 
@@ -62,10 +70,16 @@ class MainActivity : ComponentActivity()
                         music = music,
                         currentSong = currentSong,
                         isPlaying = isPlaying,
+                        currentPosition = currentPosition,
+                        duration = duration,
                         onSongClick = { song -> playMusic(music.indexOf((song))) },
                         onPlayPauseClick = { togglePlayPause() },
                         onPreviousClick = { playPreviousMusic() },
-                        onNextClick = { playNextMusic() }
+                        onNextClick = { playNextMusic() },
+                        onSeek = { position ->
+                            player.seekTo(position)
+                            currentPosition = position
+                        }
                 )
             }
         }
@@ -164,10 +178,14 @@ fun MusicList(
     music: List<Music>,
     currentSong: Music?,
     isPlaying: Boolean,
+    currentPosition: Long,
+    duration: Long,
     onSongClick: (Music) -> Unit,
     onPlayPauseClick: () -> Unit,
     onPreviousClick: () -> Unit,
-    onNextClick: () -> Unit)
+    onNextClick: () -> Unit,
+    onSeek: (Long) -> Unit
+)
 {
     Column(
             modifier = Modifier
@@ -187,24 +205,37 @@ fun MusicList(
                 }
             }
         }
-
         Column(
-                modifier = Modifier
-                    .padding(vertical = 25.dp)
-                    .size(300.dp, 50.dp)
+                modifier = Modifier.padding(vertical = 20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Box(
+                    modifier = Modifier
+                        .size(220.dp)
+                        .background(androidx.compose.ui.graphics.Color.Gray)
+            )
+            Slider(
+                    value = currentPosition.toFloat(),
+                    onValueChange = {
+                        onSeek(it.toLong())
+                    },
+                    valueRange = 0f..duration.coerceAtLeast(1L).toFloat(),
+                    modifier = Modifier.padding(top = 10.dp)
+            )
             Text(
                     currentSong?.title ?: "Nothing Playing",
-                    fontSize = 18.sp,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(top = 15.dp)
             )
             Text(
                     currentSong?.artist ?: "",
-                    fontSize = 18.sp
+                    fontSize = 15.sp
             )
         }
 
         Row(
+                modifier = Modifier.padding(top = 20.dp),
                 horizontalArrangement = Arrangement.spacedBy(15.dp)
         ) {
             Button(onClick = onPreviousClick) {
