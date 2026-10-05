@@ -44,6 +44,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
@@ -395,6 +396,32 @@ fun PlayerScreen(
                 Text("Next")
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PlayerScreenPreview()
+{
+    BesurTheme {
+        PlayerScreen(
+                currentSong = Music(
+                        id = 1,
+                        title = "Sample Song",
+                        artist = "Sample Artist",
+                        album = "Sample Album",
+                        uri = "",
+                        albumArtUri = null
+                ),
+                isPlaying = false,
+                currentPosition = 4L,
+                duration = 10L,
+                onBackClick = {},
+                onPlayPauseClick = {},
+                onPreviousClick = {},
+                onNextClick = {},
+                onSeek = {}
+        )
     }
 }
 
