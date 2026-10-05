@@ -16,7 +16,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -86,6 +88,9 @@ class MainActivity : ComponentActivity()
                             duration = duration,
                             onPlayPauseClick = {
                                 togglePlayPause()
+                            },
+                            onBackClick = {
+                                showPlayer = false
                             },
                             onPreviousClick = {
                                 playPreviousMusic()
@@ -307,6 +312,7 @@ fun PlayerScreen(
     isPlaying: Boolean,
     currentPosition: Long,
     duration: Long,
+    onBackClick: () -> Unit,
     onPlayPauseClick: () -> Unit,
     onPreviousClick: () -> Unit,
     onNextClick: () -> Unit,
@@ -318,12 +324,25 @@ fun PlayerScreen(
                 .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Button(
+                onClick = onBackClick
+        ) {
+            Text("Back")
+        }
         Box(
                 modifier = Modifier
-                    .size(320.dp)
+                    .fillMaxWidth(0.82f)
+                    .aspectRatio(1f)
                     .background(Color.Gray)
         )
-
+        Slider(
+                value = currentPosition.toFloat(),
+                onValueChange = {
+                    onSeek(it.toLong())
+                },
+                valueRange = 0f..duration.coerceAtLeast(1L).toFloat(),
+                modifier = Modifier.padding(top = 10.dp)
+        )
         Text(
                 text = currentSong?.title ?: "Nothing Playing",
                 fontSize = 22.sp,
@@ -336,10 +355,19 @@ fun PlayerScreen(
                 fontSize = 16.sp
         )
 
-        // Progress bar will go here
-
-        // Playback controls will go here
-
-        // Lyrics / Shuffle / Repeat will go here
+        Row(
+                modifier = Modifier.padding(top = 20.dp),
+                horizontalArrangement = Arrangement.spacedBy(15.dp)
+        ) {
+            Button(onClick = onPreviousClick) {
+                Text("Previous")
+            }
+            Button(onClick = onPlayPauseClick) {
+                Text(if (isPlaying) "Pause" else "Play")
+            }
+            Button(onClick = onNextClick) {
+                Text("Next")
+            }
+        }
     }
 }
