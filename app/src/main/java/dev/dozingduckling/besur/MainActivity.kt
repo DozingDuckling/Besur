@@ -1,15 +1,19 @@
 package dev.dozingduckling.besur
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.graphics.BitmapFactory
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -30,16 +34,21 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import dev.dozingduckling.besur.ui.theme.BesurTheme
+import androidx.core.net.toUri
 
 class MainActivity : ComponentActivity()
 {
@@ -318,6 +327,11 @@ fun PlayerScreen(
     onNextClick: () -> Unit,
     onSeek: (Long) -> Unit
 ) {
+    val context = LocalContext.current
+    val albumArt = remember(currentSong?.albumArtUri) {
+        loadAlbumArt(context, currentSong?.albumArtUri)
+    }
+
     Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -329,12 +343,26 @@ fun PlayerScreen(
         ) {
             Text("Back")
         }
-        Box(
-                modifier = Modifier
-                    .fillMaxWidth(0.82f)
-                    .aspectRatio(1f)
-                    .background(Color.Gray)
-        )
+        if (albumArt != null)
+        {
+            Image(
+                    bitmap = albumArt.asImageBitmap(),
+                    contentDescription = "Album artwork",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth(0.82f)
+                        .aspectRatio(1f)
+            )
+        }
+        else
+        {
+            Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.82f)
+                        .aspectRatio(1f)
+                        .background(Color.Gray)
+            )
+        }
         Slider(
                 value = currentPosition.toFloat(),
                 onValueChange = {
@@ -349,12 +377,10 @@ fun PlayerScreen(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 25.dp)
         )
-
         Text(
                 text = currentSong?.artist ?: "",
                 fontSize = 16.sp
         )
-
         Row(
                 modifier = Modifier.padding(top = 20.dp),
                 horizontalArrangement = Arrangement.spacedBy(15.dp)
@@ -369,5 +395,22 @@ fun PlayerScreen(
                 Text("Next")
             }
         }
+    }
+}
+
+fun loadAlbumArt(context: Context, uri: String?): Bitmap?
+{
+    if (uri == null)
+        return null
+
+    return try
+    {
+        context.contentResolver.openInputStream(uri.toUri())?.use {
+            BitmapFactory.decodeStream(it)
+        }
+    }
+    catch (_: Exception)
+    {
+        null
     }
 }

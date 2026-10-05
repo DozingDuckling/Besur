@@ -13,7 +13,8 @@ class MusicRepository(private val contentResolver: ContentResolver)
                 MediaStore.Audio.Media._ID,
                 MediaStore.Audio.Media.TITLE,
                 MediaStore.Audio.Media.ARTIST,
-                MediaStore.Audio.Media.ALBUM
+                MediaStore.Audio.Media.ALBUM,
+                MediaStore.Audio.Media.ALBUM_ID
         )
 
         val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
@@ -29,10 +30,13 @@ class MusicRepository(private val contentResolver: ContentResolver)
             val titleColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
             val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
             val albumColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
+            val albumIdColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
 
             while (cursor.moveToNext())
             {
                 val id = cursor.getLong(idColumn)
+                val albumId = cursor.getLong(albumIdColumn)
+                val albumArtUri = "content://media/external/audio/albumart/$albumId"
 
                 music.add(
                         Music(
@@ -40,7 +44,8 @@ class MusicRepository(private val contentResolver: ContentResolver)
                                 title = cursor.getString(titleColumn),
                                 artist = cursor.getString(artistColumn),
                                 album = cursor.getString(albumColumn),
-                                uri = "${MediaStore.Audio.Media.EXTERNAL_CONTENT_URI}/$id"
+                                uri = "${MediaStore.Audio.Media.EXTERNAL_CONTENT_URI}/$id",
+                                albumArtUri = albumArtUri
                         )
                 )
             }
