@@ -46,6 +46,7 @@ class MainActivity : ComponentActivity()
     private var isPlaying by mutableStateOf(false)
     private var currentPosition by mutableStateOf(0L)
     private var duration by mutableStateOf(0L)
+    private var showPlayer by mutableStateOf(false)
     private lateinit var musicRepository: MusicRepository
     private lateinit var player: ExoPlayer
 
@@ -77,21 +78,52 @@ class MainActivity : ComponentActivity()
 
         setContent {
             BesurTheme {
-                MusicList(
-                        music = music,
-                        currentSong = currentSong,
-                        isPlaying = isPlaying,
-                        currentPosition = currentPosition,
-                        duration = duration,
-                        onSongClick = { song -> playMusic(music.indexOf((song))) },
-                        onPlayPauseClick = { togglePlayPause() },
-                        onPreviousClick = { playPreviousMusic() },
-                        onNextClick = { playNextMusic() },
-                        onSeek = { position ->
-                            player.seekTo(position)
-                            currentPosition = position
-                        }
-                )
+                if (showPlayer) {
+                    PlayerScreen(
+                            currentSong = currentSong,
+                            isPlaying = isPlaying,
+                            currentPosition = currentPosition,
+                            duration = duration,
+                            onPlayPauseClick = {
+                                togglePlayPause()
+                            },
+                            onPreviousClick = {
+                                playPreviousMusic()
+                            },
+                            onNextClick = {
+                                playNextMusic()
+                            },
+                            onSeek = { position ->
+                                player.seekTo(position)
+                                currentPosition = position
+                            }
+                    )
+                } else {
+                    MusicList(
+                            music = music,
+                            currentSong = currentSong,
+                            isPlaying = isPlaying,
+                            currentPosition = currentPosition,
+                            duration = duration,
+                            onSongClick = { song ->
+                                playMusic(music.indexOf(song))
+                                showPlayer = true
+                            },
+                            onPlayPauseClick = {
+                                togglePlayPause()
+                            },
+                            onPreviousClick = {
+                                playPreviousMusic()
+                            },
+                            onNextClick = {
+                                playNextMusic()
+                            },
+                            onSeek = { position ->
+                                player.seekTo(position)
+                                currentPosition = position
+                            }
+                    )
+                }
             }
         }
 
@@ -266,5 +298,48 @@ fun MusicList(
                 Text("Next")
             }
         }
+    }
+}
+
+@Composable
+fun PlayerScreen(
+    currentSong: Music?,
+    isPlaying: Boolean,
+    currentPosition: Long,
+    duration: Long,
+    onPlayPauseClick: () -> Unit,
+    onPreviousClick: () -> Unit,
+    onNextClick: () -> Unit,
+    onSeek: (Long) -> Unit
+) {
+    Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+                modifier = Modifier
+                    .size(320.dp)
+                    .background(Color.Gray)
+        )
+
+        Text(
+                text = currentSong?.title ?: "Nothing Playing",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 25.dp)
+        )
+
+        Text(
+                text = currentSong?.artist ?: "",
+                fontSize = 16.sp
+        )
+
+        // Progress bar will go here
+
+        // Playback controls will go here
+
+        // Lyrics / Shuffle / Repeat will go here
     }
 }
