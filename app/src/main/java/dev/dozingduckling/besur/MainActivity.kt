@@ -20,15 +20,18 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.material3.Button
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Slider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -344,6 +347,7 @@ fun PlayerScreen(
         ) {
             Text("Back")
         }
+        Spacer(modifier = Modifier.height(20.dp))
         if (albumArt != null)
         {
             Image(
@@ -364,36 +368,52 @@ fun PlayerScreen(
                         .background(Color.Gray)
             )
         }
-        Slider(
-                value = currentPosition.toFloat(),
-                onValueChange = {
-                    onSeek(it.toLong())
-                },
-                valueRange = 0f..duration.coerceAtLeast(1L).toFloat(),
-                modifier = Modifier.padding(top = 10.dp)
-        )
         Text(
                 text = currentSong?.title ?: "Nothing Playing",
-                fontSize = 22.sp,
+                fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 25.dp)
         )
+        Spacer(modifier = Modifier.height(10.dp))
         Text(
                 text = currentSong?.artist ?: "",
-                fontSize = 16.sp
+                fontSize = 15.sp
         )
+
+        Spacer(modifier = Modifier.height(20.dp))
+        Slider(
+                value = currentPosition.toFloat(),
+                onValueChange = { onSeek(it.toLong()) },
+                valueRange = 0f..duration.coerceAtLeast(1L).toFloat(),
+                modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(10.dp))
         Row(
-                modifier = Modifier.padding(top = 20.dp),
-                horizontalArrangement = Arrangement.spacedBy(15.dp)
-        ) {
-            Button(onClick = onPreviousClick) {
-                Text("Previous")
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+        )
+        {
+            IconButton(
+                    onClick = onPreviousClick,
+                    modifier = Modifier.size(100.dp)
+            )
+            {
+                // TODO: previous icon
             }
-            Button(onClick = onPlayPauseClick) {
-                Text(if (isPlaying) "Pause" else "Play")
+            IconButton(
+                    onClick = onPlayPauseClick,
+                    modifier = Modifier.size(100.dp)
+            )
+            {
+                // TODO: play pause icon, isPlaying check
             }
-            Button(onClick = onNextClick) {
-                Text("Next")
+            IconButton(
+                    onClick = onNextClick,
+                    modifier = Modifier.size(100.dp)
+            )
+            {
+                // TODO: next icon
             }
         }
     }
