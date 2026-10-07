@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.material3.Button
 import androidx.compose.material3.IconButton
@@ -43,12 +44,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import androidx.media3.common.MediaItem
@@ -341,18 +344,17 @@ fun PlayerScreen(
     Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(20.dp),
+                .padding(25.dp),
             horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(modifier = Modifier.height(20.dp))
         IconButton(
                 onClick = onBackClick,
-                modifier = Modifier
-                    .align(Alignment.Start)
-                    .padding(top = 10.dp)
+                modifier = Modifier.align(Alignment.Start)
         ) {
             Icon(
                     painter = painterResource(R.drawable.ic_back),
-                    contentDescription = "Back"
+                    contentDescription = "Back",
             )
         }
         Spacer(modifier = Modifier.height(20.dp))
@@ -365,6 +367,7 @@ fun PlayerScreen(
                     modifier = Modifier
                         .fillMaxWidth(1f)
                         .aspectRatio(1f)
+                        .clip(RoundedCornerShape(12.dp))
             )
         }
         else
@@ -373,6 +376,7 @@ fun PlayerScreen(
                     modifier = Modifier
                         .fillMaxWidth(1f)
                         .aspectRatio(1f)
+                        .clip(RoundedCornerShape(12.dp))
                         .background(Color.Gray)
             )
         }
@@ -381,14 +385,23 @@ fun PlayerScreen(
                 text = currentSong?.title ?: "Nothing Playing",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = 25.dp)
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 25.dp)
         )
         Spacer(modifier = Modifier.height(10.dp))
         Text(
                 text = currentSong?.artist ?: "",
-                fontSize = 16.sp
+                fontSize = 17.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .fillMaxWidth()
         )
-        Spacer(modifier = Modifier.height(20.dp))
+        //Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.weight(1f))
         Slider(
                 value = currentPosition.toFloat(),
                 onValueChange = { onSeek(it.toLong()) },
@@ -404,10 +417,13 @@ fun PlayerScreen(
         {
             IconButton(
                     onClick = onPreviousClick,
-                    modifier = Modifier.size(60.dp)
+                    modifier = Modifier.size(100.dp)
             )
             {
                 Icon(
+                        modifier = Modifier
+                            .fillMaxWidth(0.4f)
+                            .aspectRatio(1f),
                         painter = painterResource(R.drawable.ic_previous),
                         contentDescription = "Previous"
                 )
@@ -418,6 +434,9 @@ fun PlayerScreen(
             )
             {
                 Icon(
+                        modifier = Modifier
+                            .fillMaxWidth(0.8f)
+                            .aspectRatio(1f),
                         painter = painterResource(
                                 if (isPlaying)
                                     R.drawable.ic_pause
@@ -429,15 +448,19 @@ fun PlayerScreen(
             }
             IconButton(
                     onClick = onNextClick,
-                    modifier = Modifier.size(60.dp)
+                    modifier = Modifier.size(100.dp)
             )
             {
                 Icon(
+                        modifier = Modifier
+                            .fillMaxWidth(0.4f)
+                            .aspectRatio(1f),
                         painter = painterResource(R.drawable.ic_next),
                         contentDescription = "Next"
                 )
             }
         }
+        Spacer(modifier = Modifier.height(20.dp))
     }
 }
 
@@ -453,14 +476,14 @@ fun PlayerScreenPreview()
         PlayerScreen(
                 currentSong = Music(
                         id = 1,
-                        title = "Sample Song",
-                        artist = "Sample Artist",
-                        album = "Sample Album",
+                        title = "Song Name",
+                        artist = "Artist Name",
+                        album = "Album Name",
                         uri = "",
                         albumArtUri = null
                 ),
                 isPlaying = false,
-                currentPosition = 4L,
+                currentPosition = 3L,
                 duration = 10L,
                 onBackClick = {},
                 onPlayPauseClick = {},
