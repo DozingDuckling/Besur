@@ -32,6 +32,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.material3.Button
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Slider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -47,6 +48,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import androidx.media3.common.MediaItem
@@ -342,10 +344,16 @@ fun PlayerScreen(
                 .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Button(
-                onClick = onBackClick
+        IconButton(
+                onClick = onBackClick,
+                modifier = Modifier
+                    .align(Alignment.Start)
+                    .padding(top = 10.dp)
         ) {
-            Text("Back")
+            Icon(
+                    painter = painterResource(R.drawable.ic_back),
+                    contentDescription = "Back"
+            )
         }
         Spacer(modifier = Modifier.height(20.dp))
         if (albumArt != null)
@@ -355,7 +363,7 @@ fun PlayerScreen(
                     contentDescription = "Album artwork",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .fillMaxWidth(0.82f)
+                        .fillMaxWidth(1f)
                         .aspectRatio(1f)
             )
         }
@@ -363,11 +371,12 @@ fun PlayerScreen(
         {
             Box(
                     modifier = Modifier
-                        .fillMaxWidth(0.82f)
+                        .fillMaxWidth(1f)
                         .aspectRatio(1f)
                         .background(Color.Gray)
             )
         }
+        Spacer(modifier = Modifier.height(20.dp))
         Text(
                 text = currentSong?.title ?: "Nothing Playing",
                 fontSize = 20.sp,
@@ -377,9 +386,8 @@ fun PlayerScreen(
         Spacer(modifier = Modifier.height(10.dp))
         Text(
                 text = currentSong?.artist ?: "",
-                fontSize = 15.sp
+                fontSize = 16.sp
         )
-
         Spacer(modifier = Modifier.height(20.dp))
         Slider(
                 value = currentPosition.toFloat(),
@@ -396,24 +404,38 @@ fun PlayerScreen(
         {
             IconButton(
                     onClick = onPreviousClick,
-                    modifier = Modifier.size(100.dp)
+                    modifier = Modifier.size(60.dp)
             )
             {
-                // TODO: previous icon
+                Icon(
+                        painter = painterResource(R.drawable.ic_previous),
+                        contentDescription = "Previous"
+                )
             }
             IconButton(
                     onClick = onPlayPauseClick,
                     modifier = Modifier.size(100.dp)
             )
             {
-                // TODO: play pause icon, isPlaying check
+                Icon(
+                        painter = painterResource(
+                                if (isPlaying)
+                                    R.drawable.ic_pause
+                                else
+                                    R.drawable.ic_play
+                        ),
+                        contentDescription = if (isPlaying) "Pause" else "Play"
+                )
             }
             IconButton(
                     onClick = onNextClick,
-                    modifier = Modifier.size(100.dp)
+                    modifier = Modifier.size(60.dp)
             )
             {
-                // TODO: next icon
+                Icon(
+                        painter = painterResource(R.drawable.ic_next),
+                        contentDescription = "Next"
+                )
             }
         }
     }
