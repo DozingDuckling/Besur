@@ -441,7 +441,11 @@ fun PlayerScreen(
     }
 }
 
-@Preview(showBackground = true)
+@Preview(
+        showBackground = true,
+        showSystemUi = true,
+        device = "spec:width=1080px,height=2340px,dpi=416"
+)
 @Composable
 fun PlayerScreenPreview()
 {
