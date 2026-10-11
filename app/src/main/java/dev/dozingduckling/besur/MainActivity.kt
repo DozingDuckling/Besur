@@ -400,7 +400,6 @@ fun PlayerScreen(
                 modifier = Modifier
                     .fillMaxWidth()
         )
-        //Spacer(modifier = Modifier.height(20.dp))
         Spacer(modifier = Modifier.weight(1f))
         Slider(
                 value = currentPosition.toFloat(),
@@ -408,6 +407,20 @@ fun PlayerScreen(
                 valueRange = 0f..duration.coerceAtLeast(1L).toFloat(),
                 modifier = Modifier.fillMaxWidth()
         )
+        Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                    formatTime(currentPosition),
+                    fontSize = 15.sp
+            )
+            Text(
+                    formatTime(duration),
+                    fontSize = 15.sp
+            )
+        }
+
         Spacer(modifier = Modifier.height(10.dp))
         Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -464,34 +477,13 @@ fun PlayerScreen(
     }
 }
 
-@Preview(
-        showBackground = true,
-        showSystemUi = true,
-        device = "spec:width=1080px,height=2340px,dpi=416"
-)
-@Composable
-fun PlayerScreenPreview()
+fun formatTime(milliseconds: Long): String
 {
-    BesurTheme {
-        PlayerScreen(
-                currentSong = Music(
-                        id = 1,
-                        title = "Song Name",
-                        artist = "Artist Name",
-                        album = "Album Name",
-                        uri = "",
-                        albumArtUri = null
-                ),
-                isPlaying = false,
-                currentPosition = 3L,
-                duration = 10L,
-                onBackClick = {},
-                onPlayPauseClick = {},
-                onPreviousClick = {},
-                onNextClick = {},
-                onSeek = {}
-        )
-    }
+    val totalSeconds = milliseconds / 1000
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+
+    return "%d:%02d".format(minutes, seconds)
 }
 
 fun loadAlbumArt(context: Context, uri: String?): Bitmap?
@@ -508,5 +500,35 @@ fun loadAlbumArt(context: Context, uri: String?): Bitmap?
     catch (_: Exception)
     {
         null
+    }
+}
+
+@Preview(
+        showBackground = true,
+        showSystemUi = true,
+        device = "spec:width=1080px,height=2222px,dpi=416"
+)
+@Composable
+fun PlayerScreenPreview()
+{
+    BesurTheme {
+        PlayerScreen(
+                currentSong = Music(
+                        id = 1,
+                        title = "Song Name",
+                        artist = "Artist Name",
+                        album = "Album Name",
+                        uri = "",
+                        albumArtUri = null
+                ),
+                isPlaying = false,
+                currentPosition = 60000L,
+                duration = 240000L,
+                onBackClick = {},
+                onPlayPauseClick = {},
+                onPreviousClick = {},
+                onNextClick = {},
+                onSeek = {}
+        )
     }
 }
