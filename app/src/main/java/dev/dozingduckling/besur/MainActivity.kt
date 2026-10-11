@@ -509,6 +509,79 @@ fun loadAlbumArt(context: Context, uri: String?): Bitmap?
         device = "spec:width=1080px,height=2222px,dpi=416"
 )
 @Composable
+fun MusicListPreview()
+{
+    BesurTheme {
+        MusicList(
+                music = listOf(
+                        Music(
+                                id = 1,
+                                title = "Song Name One",
+                                artist = "Artist One",
+                                album = "Album One",
+                                uri = "",
+                                albumArtUri = null
+                        ),
+                        Music(
+                                id = 2,
+                                title = "Song Name Two",
+                                artist = "Artist Two",
+                                album = "Album Two",
+                                uri = "",
+                                albumArtUri = null
+                        ),
+                        Music(
+                                id = 3,
+                                title = "Song Name Three",
+                                artist = "Artist Three",
+                                album = "Album Three",
+                                uri = "",
+                                albumArtUri = null
+                        ),
+                        Music(
+                                id = 4,
+                                title = "Song Name Four",
+                                artist = "Artist Four",
+                                album = "Album Four",
+                                uri = "",
+                                albumArtUri = null
+                        ),
+                        Music(
+                                id = 5,
+                                title = "Song Name Four",
+                                artist = "Artist Four",
+                                album = "Album Four",
+                                uri = "",
+                                albumArtUri = null
+                        ),
+                        Music(
+                                id = 6,
+                                title = "Song Name Four",
+                                artist = "Artist Four",
+                                album = "Album Four",
+                                uri = "",
+                                albumArtUri = null
+                        )
+                ),
+                currentSong = null,
+                isPlaying = false,
+                currentPosition = 60000L,
+                duration = 240000L,
+                onSongClick = {},
+                onPlayPauseClick = {},
+                onPreviousClick = {},
+                onNextClick = {},
+                onSeek = {}
+        )
+    }
+}
+
+@Preview(
+        showBackground = true,
+        showSystemUi = true,
+        device = "spec:width=1080px,height=2222px,dpi=416"
+)
+@Composable
 fun PlayerScreenPreview()
 {
     BesurTheme {
