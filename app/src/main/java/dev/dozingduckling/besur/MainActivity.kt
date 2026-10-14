@@ -29,6 +29,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -36,7 +38,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
@@ -263,7 +264,10 @@ fun MainScreen(
                 onSongClick = onSongClick,
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 20.dp, vertical = 12.dp)
+                    .padding(horizontal = 20.dp)
+                    .padding(top = 20.dp, bottom = 10.dp)
+                    .statusBarsPadding()
+                    .navigationBarsPadding()
         )
 
         MiniPlayer(
@@ -276,7 +280,7 @@ fun MainScreen(
                 },
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = 10.dp)
                     .padding(bottom = 10.dp)
                     .navigationBarsPadding()
         )
@@ -328,7 +332,6 @@ fun MiniPlayer(
                 .clip(RoundedCornerShape(10.dp))
                 .background(Color(0xFFDDDDDD))
                 .clickable { onOpenPlayer() }
-                .padding(12.dp)
     )
     {
         Row(
@@ -343,7 +346,7 @@ fun MiniPlayer(
                         contentDescription = "Album artwork",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .size(50.dp)
+                            .size(70.dp)
                             .clip(RoundedCornerShape(10.dp))
                 )
             }
@@ -351,7 +354,7 @@ fun MiniPlayer(
             {
                 Box(
                         modifier = Modifier
-                            .size(50.dp)
+                            .size(70.dp)
                             .clip(RoundedCornerShape(10.dp))
                             .background(Color.Gray)
                 )
@@ -360,7 +363,7 @@ fun MiniPlayer(
             Column(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(horizontal = 12.dp)
+                        .padding(horizontal = 15.dp)
             )
             {
                 Text(
@@ -370,7 +373,6 @@ fun MiniPlayer(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                 )
-
                 Text(
                         text = currentSong?.artist ?: "...",
                         fontSize = 13.sp,
@@ -378,34 +380,41 @@ fun MiniPlayer(
                         overflow = TextOverflow.Ellipsis
                 )
             }
-            IconButton(
-                    onClick = onPlayPauseClick,
-                    modifier = Modifier.size(44.dp)
+            Row(
+                    modifier = Modifier
+                        .width(100.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
             )
             {
-                Icon(
-                        modifier = Modifier
-                            .fillMaxWidth(0.7f)
-                            .aspectRatio(1f),
-                        painter = painterResource(
-                                if (isPlaying) R.drawable.ic_pause
-                                else R.drawable.ic_play
-                        ),
-                        contentDescription = if (isPlaying) "Pause" else "Play"
+                IconButton(
+                        onClick = onPlayPauseClick,
+                        modifier = Modifier.size(40.dp)
                 )
-            }
-            IconButton(
-                    onClick = onNextClick,
-                    modifier = Modifier.size(40.dp)
-            )
-            {
-                Icon(
-                        modifier = Modifier
-                            .fillMaxWidth(0.7f)
-                            .aspectRatio(1f),
-                        painter = painterResource(R.drawable.ic_next),
-                        contentDescription = "Next"
+                {
+                    Icon(
+                            modifier = Modifier
+                                .fillMaxWidth(0.7f)
+                                .aspectRatio(1f),
+                            painter = painterResource(
+                                    if (isPlaying) R.drawable.ic_pause
+                                    else R.drawable.ic_play
+                            ),
+                            contentDescription = if (isPlaying) "Pause" else "Play"
+                    )
+                }
+                IconButton(
+                        onClick = onNextClick,
+                        modifier = Modifier.size(40.dp)
                 )
+                {
+                    Icon(
+                            modifier = Modifier
+                                .fillMaxWidth(0.7f)
+                                .aspectRatio(1f),
+                            painter = painterResource(R.drawable.ic_next),
+                            contentDescription = "Next"
+                    )
+                }
             }
         }
     }
