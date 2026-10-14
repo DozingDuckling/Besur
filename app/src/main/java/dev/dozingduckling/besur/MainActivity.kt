@@ -20,11 +20,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -34,6 +36,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
@@ -124,23 +127,14 @@ class MainActivity : ComponentActivity()
                             music = music,
                             currentSong = currentSong,
                             isPlaying = isPlaying,
-                            currentPosition = currentPosition,
-                            duration = duration,
                             onSongClick = { song ->
                                 playMusic(music.indexOf(song))
                             },
                             onPlayPauseClick = {
                                 togglePlayPause()
                             },
-                            onPreviousClick = {
-                                playPreviousMusic()
-                            },
                             onNextClick = {
                                 playNextMusic()
-                            },
-                            onSeek = { position ->
-                                player.seekTo(position)
-                                currentPosition = position
                             },
                             onMiniPlayerClick = {
                                 showPlayer = true
@@ -256,65 +250,56 @@ fun MainScreen(
     music: List<Music>,
     currentSong: Music?,
     isPlaying: Boolean,
-    currentPosition: Long,
-    duration: Long,
     onSongClick: (Music) -> Unit,
     onPlayPauseClick: () -> Unit,
-    onPreviousClick: () -> Unit,
     onNextClick: () -> Unit,
-    onSeek: (Long) -> Unit,
     onMiniPlayerClick: () -> Unit
-)
-{
-    Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(25.dp)
-    )
-    {
+) {
+    Box(
+            modifier = Modifier.fillMaxSize()
+    ) {
         SongList(
                 music = music,
                 onSongClick = onSongClick,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 20.dp, vertical = 12.dp)
         )
 
         MiniPlayer(
                 currentSong = currentSong,
                 isPlaying = isPlaying,
-                currentPosition = currentPosition,
-                duration = duration,
                 onPlayPauseClick = onPlayPauseClick,
-                onPreviousClick = onPreviousClick,
                 onNextClick = onNextClick,
-                onSeek = onSeek,
                 onOpenPlayer = {
-                    if (currentSong != null)
-                        onMiniPlayerClick()
-                }
+                    if (currentSong != null) onMiniPlayerClick()
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 10.dp)
+                    .navigationBarsPadding()
         )
     }
 }
-
 
 @Composable
 fun SongList(
     music: List<Music>,
     onSongClick: (Music) -> Unit,
     modifier: Modifier = Modifier
-)
-{
+) {
     LazyColumn(
             modifier = modifier,
-            verticalArrangement = Arrangement.spacedBy(15.dp)
-    )
-    {
+            verticalArrangement = Arrangement.spacedBy(15.dp),
+            contentPadding = PaddingValues(bottom = 100.dp)
+    ) {
         items(music) { song ->
             Column(
                     modifier = Modifier.clickable {
                         onSongClick(song)
                     }
-            )
-            {
+            ) {
                 Text(song.title)
                 Text(song.artist)
             }
@@ -322,18 +307,14 @@ fun SongList(
     }
 }
 
-
 @Composable
 fun MiniPlayer(
     currentSong: Music?,
     isPlaying: Boolean,
-    currentPosition: Long,
-    duration: Long,
     onPlayPauseClick: () -> Unit,
-    onPreviousClick: () -> Unit,
     onNextClick: () -> Unit,
-    onSeek: (Long) -> Unit,
-    onOpenPlayer: () -> Unit
+    onOpenPlayer: () -> Unit,
+    modifier: Modifier = Modifier
 )
 {
     val context = LocalContext.current
@@ -342,10 +323,10 @@ fun MiniPlayer(
     }
 
     Column(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(10.dp))
-                .background(Color(0xFFCCCCCC))
+                .background(Color(0xFFDDDDDD))
                 .clickable { onOpenPlayer() }
                 .padding(12.dp)
     )
@@ -392,19 +373,9 @@ fun MiniPlayer(
 
                 Text(
                         text = currentSong?.artist ?: "...",
-                        fontSize = 12.sp,
+                        fontSize = 13.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
-                )
-            }
-            IconButton(
-                    onClick = onPreviousClick,
-                    modifier = Modifier.size(40.dp)
-            )
-            {
-                Icon(
-                        painter = painterResource(R.drawable.ic_previous),
-                        contentDescription = "Previous"
                 )
             }
             IconButton(
@@ -413,6 +384,9 @@ fun MiniPlayer(
             )
             {
                 Icon(
+                        modifier = Modifier
+                            .fillMaxWidth(0.7f)
+                            .aspectRatio(1f),
                         painter = painterResource(
                                 if (isPlaying) R.drawable.ic_pause
                                 else R.drawable.ic_play
@@ -426,23 +400,17 @@ fun MiniPlayer(
             )
             {
                 Icon(
+                        modifier = Modifier
+                            .fillMaxWidth(0.7f)
+                            .aspectRatio(1f),
                         painter = painterResource(R.drawable.ic_next),
                         contentDescription = "Next"
                 )
             }
         }
-        Spacer(modifier = Modifier.height(10.dp))
-        Slider(
-                value = currentPosition.toFloat().coerceIn(
-                        0f,
-                        duration.coerceAtLeast(1L).toFloat()
-                ),
-                onValueChange = { onSeek(it.toLong()) },
-                valueRange = 0f..duration.coerceAtLeast(1L).toFloat(),
-                modifier = Modifier.height(25.dp)
-        )
     }
 }
+
 
 
 @Composable
@@ -686,13 +654,9 @@ fun MainScreenPreview()
                 ),
                 currentSong = null,
                 isPlaying = false,
-                currentPosition = 60000L,
-                duration = 240000L,
                 onSongClick = {},
                 onPlayPauseClick = {},
-                onPreviousClick = {},
                 onNextClick = {},
-                onSeek = {},
                 onMiniPlayerClick = {}
         )
     }
