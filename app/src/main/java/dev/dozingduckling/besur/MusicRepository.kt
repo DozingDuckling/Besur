@@ -41,6 +41,7 @@ class MusicRepository(private val contentResolver: ContentResolver)
                 music.add(
                         Music(
                                 id = id,
+                                albumId = albumId,
                                 title = cursor.getString(titleColumn),
                                 artist = cursor.getString(artistColumn),
                                 album = cursor.getString(albumColumn),

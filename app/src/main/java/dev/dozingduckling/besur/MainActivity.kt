@@ -1,10 +1,8 @@
 package dev.dozingduckling.besur
 
 import android.Manifest
-import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -30,7 +28,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,9 +37,9 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,19 +55,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
-import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import dev.dozingduckling.besur.ui.theme.BesurTheme
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
     private var music by mutableStateOf<List<Music>>(emptyList())
     private var currentSong by mutableStateOf<Music?>(null)
     private var isPlaying by mutableStateOf(false)
-    private var currentPosition by mutableStateOf(0L)
-    private var duration by mutableStateOf(0L)
+    private var currentPosition by mutableLongStateOf(0L)
+    private var duration by mutableLongStateOf(0L)
     private var showPlayer by mutableStateOf(false)
     private lateinit var musicRepository: MusicRepository
     private lateinit var player: ExoPlayer
@@ -270,7 +264,6 @@ fun MainScreen(
     }
 }
 
-// TODO: update album art to a better approch
 @Composable
 fun SongList(
     music: List<Music>,
@@ -288,30 +281,13 @@ fun SongList(
                         onSongClick(song)
                     }
             ) {
-                val context = LocalContext.current
-                val albumArtThumbnail by produceState<Bitmap?>(
-                        initialValue = null,
-                        key1 = song.albumArtUri
-                ) {
-                    value = withContext(Dispatchers.IO) {
-                        loadAlbumArtThumbnail(context, song.albumArtUri)
-                    }
-                }
-
-                albumArtThumbnail?.let {
-                    Image(
-                            bitmap = it.asImageBitmap(),
-                            contentDescription = "Album artwork",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .size(70.dp)
-                                .clip(RoundedCornerShape(10.dp))
-                    )
-                } ?: Box(
+                AlbumArtwork(
+                        uri = song.uri,
+                        albumId = song.albumId,
+                        targetSizePx = 256,
                         modifier = Modifier
                             .size(70.dp)
                             .clip(RoundedCornerShape(10.dp))
-                            .background(Color.Gray)
                 )
 
                 Column(
@@ -336,94 +312,73 @@ fun MiniPlayer(
     onOpenPlayer: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-
-    val albumArt by produceState<Bitmap?>(
-            initialValue = null,
-            key1 = currentSong?.albumArtUri
-    ) {
-        value = withContext(Dispatchers.IO) {
-            loadAlbumArtThumbnail(context, currentSong?.albumArtUri)
-        }
-    }
-
-    Column(
+    Row(
             modifier = modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(10.dp))
                 .background(Color(0xFFDDDDDD))
                 .clickable { onOpenPlayer() }
+                .padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
     ) {
+        AlbumArtwork(
+                uri = currentSong?.uri,
+                albumId = currentSong?.albumId,
+                targetSizePx = 256,
+                modifier = Modifier
+                    .size(70.dp)
+                    .clip(RoundedCornerShape(10.dp))
+        )
+        Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 12.dp)
+        ) {
+            Text(
+                    text = currentSong?.title ?: "Playing Nothing",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                    text = currentSong?.artist ?: "...",
+                    fontSize = 13.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+            )
+        }
+
         Row(
-                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
         ) {
-            albumArt?.let {
-                Image(
-                        bitmap = it.asImageBitmap(),
-                        contentDescription = "Album artwork",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(70.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                )
-            } ?: Box(
-                    modifier = Modifier
-                        .size(70.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color.Gray)
-            )
-
-            Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 15.dp)
+            IconButton(
+                    onClick = onPlayPauseClick,
+                    modifier = Modifier.size(40.dp)
             ) {
-                Text(
-                        text = currentSong?.title ?: "Playing Nothing",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                        text = currentSong?.artist ?: "...",
-                        fontSize = 13.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                Icon(
+                        modifier = Modifier
+                            .fillMaxWidth(0.7f)
+                            .aspectRatio(1f),
+                        painter = painterResource(
+                                if (isPlaying) R.drawable.ic_pause
+                                else R.drawable.ic_play
+                        ),
+                        contentDescription = if (isPlaying) "Pause" else "Play"
                 )
             }
-            Row(
-                    modifier = Modifier.width(100.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+            IconButton(
+                    onClick = onNextClick,
+                    modifier = Modifier.size(40.dp)
             ) {
-                IconButton(
-                        onClick = onPlayPauseClick,
-                        modifier = Modifier.size(40.dp)
-                ) {
-                    Icon(
-                            modifier = Modifier
-                                .fillMaxWidth(0.7f)
-                                .aspectRatio(1f),
-                            painter = painterResource(
-                                    if (isPlaying) R.drawable.ic_pause
-                                    else R.drawable.ic_play
-                            ),
-                            contentDescription = if (isPlaying) "Pause" else "Play"
-                    )
-                }
-                IconButton(
-                        onClick = onNextClick,
-                        modifier = Modifier.size(40.dp)
-                ) {
-                    Icon(
-                            modifier = Modifier
-                                .fillMaxWidth(0.7f)
-                                .aspectRatio(1f),
-                            painter = painterResource(R.drawable.ic_next),
-                            contentDescription = "Next"
-                    )
-                }
+                Icon(
+                        modifier = Modifier
+                            .fillMaxWidth(0.7f)
+                            .aspectRatio(1f),
+                        painter = painterResource(R.drawable.ic_next),
+                        contentDescription = "Next"
+                )
             }
         }
     }
@@ -441,11 +396,6 @@ fun PlayerScreen(
     onNextClick: () -> Unit,
     onSeek: (Long) -> Unit
 ) {
-    val context = LocalContext.current
-    val albumArt = remember(currentSong?.albumArtUri) {
-        loadAlbumArt(context, currentSong?.albumArtUri)
-    }
-
     Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -463,25 +413,15 @@ fun PlayerScreen(
             )
         }
         Spacer(modifier = Modifier.height(20.dp))
-        if (albumArt != null) {
-            Image(
-                    bitmap = albumArt.asImageBitmap(),
-                    contentDescription = "Album artwork",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxWidth(1f)
-                        .aspectRatio(1f)
-                        .clip(RoundedCornerShape(10.dp))
-            )
-        } else {
-            Box(
-                    modifier = Modifier
-                        .fillMaxWidth(1f)
-                        .aspectRatio(1f)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color.Gray)
-            )
-        }
+        AlbumArtwork(
+                uri = currentSong?.uri,
+                albumId = currentSong?.albumId,
+                targetSizePx = 1024,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(1f)
+                    .clip(RoundedCornerShape(10.dp))
+        )
         Spacer(modifier = Modifier.height(20.dp))
         Text(
                 text = currentSong?.title ?: "Nothing Playing",
@@ -572,55 +512,35 @@ fun PlayerScreen(
     }
 }
 
+@Composable
+fun AlbumArtwork(uri: String?, albumId: Long?, targetSizePx: Int, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+
+    val albumArt by produceState<Bitmap?>(
+            initialValue = null,
+            key1 = uri,
+            key2 = albumId,
+            key3 = targetSizePx
+    ) {
+        value = AlbumArtLoader.load(context, uri, albumId, targetSizePx)
+    }
+
+    albumArt?.let {
+        Image(
+                bitmap = it.asImageBitmap(),
+                contentDescription = "Album artwork",
+                contentScale = ContentScale.Crop,
+                modifier = modifier
+        )
+    } ?: Box(modifier = modifier.background(Color.Gray))
+}
+
 fun formatTime(milliseconds: Long): String {
     val totalSeconds = milliseconds / 1000
     val minutes = totalSeconds / 60
     val seconds = totalSeconds % 60
 
     return "%d:%02d".format(minutes, seconds)
-}
-
-fun loadAlbumArt(context: Context, uri: String?): Bitmap? {
-    if (uri == null) return null
-
-    return try {
-        context.contentResolver.openInputStream(uri.toUri())?.use {
-            BitmapFactory.decodeStream(it)
-        }
-    } catch (_: Exception) {
-        null
-    }
-}
-
-fun loadAlbumArtThumbnail(context: Context, uri: String?): Bitmap? {
-    if (uri == null) return null
-
-    return try {
-        val contentUri = uri.toUri()
-
-        val options = BitmapFactory.Options().apply {
-            inJustDecodeBounds = true
-        }
-
-        context.contentResolver.openInputStream(contentUri)?.use {
-            BitmapFactory.decodeStream(it, null, options)
-        }
-
-        options.inSampleSize = 1
-        while (options.outWidth / options.inSampleSize > 256 ||
-            options.outHeight / options.inSampleSize > 256
-        ) {
-            options.inSampleSize *= 2
-        }
-
-        options.inJustDecodeBounds = false
-
-        context.contentResolver.openInputStream(contentUri)?.use {
-            BitmapFactory.decodeStream(it, null, options)
-        }
-    } catch (_: Exception) {
-        null
-    }
 }
 
 @Preview(
@@ -635,6 +555,7 @@ fun MainScreenPreview() {
                 music = listOf(
                         Music(
                                 id = 1,
+                                albumId = 1,
                                 title = "Song Name One",
                                 artist = "Artist One",
                                 album = "Album One",
@@ -643,41 +564,10 @@ fun MainScreenPreview() {
                         ),
                         Music(
                                 id = 2,
+                                albumId = 2,
                                 title = "Song Name Two",
                                 artist = "Artist Two",
                                 album = "Album Two",
-                                uri = "",
-                                albumArtUri = null
-                        ),
-                        Music(
-                                id = 3,
-                                title = "Song Name Three",
-                                artist = "Artist Three",
-                                album = "Album Three",
-                                uri = "",
-                                albumArtUri = null
-                        ),
-                        Music(
-                                id = 4,
-                                title = "Song Name Four",
-                                artist = "Artist Four",
-                                album = "Album Four",
-                                uri = "",
-                                albumArtUri = null
-                        ),
-                        Music(
-                                id = 5,
-                                title = "Song Name Four",
-                                artist = "Artist Four",
-                                album = "Album Four",
-                                uri = "",
-                                albumArtUri = null
-                        ),
-                        Music(
-                                id = 6,
-                                title = "Song Name Four",
-                                artist = "Artist Four",
-                                album = "Album Four",
                                 uri = "",
                                 albumArtUri = null
                         )
@@ -703,6 +593,7 @@ fun PlayerScreenPreview() {
         PlayerScreen(
                 currentSong = Music(
                         id = 1,
+                        albumId = 1,
                         title = "Song Name",
                         artist = "Artist Name",
                         album = "Album Name",
