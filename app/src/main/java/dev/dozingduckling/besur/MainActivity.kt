@@ -299,14 +299,47 @@ fun SongList(
             contentPadding = PaddingValues(bottom = 100.dp)
     ) {
         items(music) { song ->
-            Column(
+            Row(
                     modifier = Modifier.clickable {
                         onSongClick(song)
                     }
-            ) {
-                Text(song.title)
-                Text(song.artist)
+            )
+            {
+                val context = LocalContext.current
+                val albumArt = remember(song.albumArtUri) {
+                    loadAlbumArt(context, song.albumArtUri)
+                }
+
+                if (albumArt != null)
+                {
+                    Image(
+                            bitmap = albumArt.asImageBitmap(),
+                            contentDescription = "Album artwork",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(70.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                    )
+                }
+                else
+                {
+                    Box(
+                            modifier = Modifier
+                                .size(70.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(Color.Gray)
+                    )
+                }
+                Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = 15.dp)
+                ) {
+                    Text(song.title)
+                    Text(song.artist)
+                }
             }
+
         }
     }
 }
