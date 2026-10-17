@@ -275,7 +275,7 @@ fun SongList(
             verticalArrangement = Arrangement.spacedBy(15.dp),
             contentPadding = PaddingValues(bottom = 100.dp)
     ) {
-        items(music) { song ->
+        items(music, key = { it.id }) { song ->
             Row(
                     modifier = Modifier.clickable {
                         onSongClick(song)
@@ -289,7 +289,6 @@ fun SongList(
                             .size(70.dp)
                             .clip(RoundedCornerShape(10.dp))
                 )
-
                 Column(
                         modifier = Modifier
                             .weight(1f)
