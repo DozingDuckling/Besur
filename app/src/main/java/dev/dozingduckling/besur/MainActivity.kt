@@ -359,8 +359,12 @@ fun MiniPlayer(
 )
 {
     val context = LocalContext.current
-    val albumArt = remember(currentSong?.albumArtUri) {
-        loadAlbumArt(context, currentSong?.albumArtUri)
+
+    val albumArt by produceState<Bitmap?>(initialValue = null, key1 = currentSong?.albumArtUri
+    ) {
+        value = withContext(Dispatchers.IO) {
+            loadAlbumArtThumbnail(context, currentSong?.albumArtUri)
+        }
     }
 
     Column(
@@ -376,26 +380,21 @@ fun MiniPlayer(
                 verticalAlignment = Alignment.CenterVertically
         )
         {
-            if (albumArt != null)
-            {
+            albumArt?.let {
                 Image(
-                        bitmap = albumArt.asImageBitmap(),
+                        bitmap = it.asImageBitmap(),
                         contentDescription = "Album artwork",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .size(70.dp)
                             .clip(RoundedCornerShape(10.dp))
                 )
-            }
-            else
-            {
-                Box(
-                        modifier = Modifier
-                            .size(70.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(Color.Gray)
-                )
-            }
+            } ?: Box(
+                    modifier = Modifier
+                        .size(70.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.Gray)
+            )
 
             Column(
                     modifier = Modifier
