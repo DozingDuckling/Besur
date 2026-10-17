@@ -42,6 +42,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -61,6 +62,8 @@ import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import dev.dozingduckling.besur.ui.theme.BesurTheme
 import androidx.core.net.toUri
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity()
 {
@@ -306,30 +309,31 @@ fun SongList(
             )
             {
                 val context = LocalContext.current
-                val albumArt = remember(song.albumArtUri) {
-                    loadAlbumArt(context, song.albumArtUri)
+                val albumArtThumbnail by produceState<Bitmap?>(
+                        initialValue = null,
+                        key1 = song.albumArtUri
+                ) {
+                    value = withContext(Dispatchers.IO) {
+                        loadAlbumArtThumbnail(context, song.albumArtUri)
+                    }
                 }
 
-                if (albumArt != null)
-                {
+                albumArtThumbnail?.let {
                     Image(
-                            bitmap = albumArt.asImageBitmap(),
+                            bitmap = it.asImageBitmap(),
                             contentDescription = "Album artwork",
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
                                 .size(70.dp)
                                 .clip(RoundedCornerShape(10.dp))
                     )
-                }
-                else
-                {
-                    Box(
-                            modifier = Modifier
-                                .size(70.dp)
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(Color.Gray)
-                    )
-                }
+                } ?: Box(
+                        modifier = Modifier
+                            .size(70.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color.Gray)
+                )
+
                 Column(
                         modifier = Modifier
                             .weight(1f)
@@ -630,6 +634,37 @@ fun loadAlbumArt(context: Context, uri: String?): Bitmap?
     }
     catch (_: Exception)
     {
+        null
+    }
+}
+
+fun loadAlbumArtThumbnail(context: Context, uri: String?): Bitmap? {
+    if (uri == null) return null
+
+    return try {
+        val contentUri = uri.toUri()
+
+        val options = BitmapFactory.Options().apply {
+            inJustDecodeBounds = true
+        }
+
+        context.contentResolver.openInputStream(contentUri)?.use {
+            BitmapFactory.decodeStream(it, null, options)
+        }
+
+        options.inSampleSize = 1
+        while (options.outWidth / options.inSampleSize > 256 ||
+            options.outHeight / options.inSampleSize > 256
+        ) {
+            options.inSampleSize *= 2
+        }
+
+        options.inJustDecodeBounds = false
+
+        context.contentResolver.openInputStream(contentUri)?.use {
+            BitmapFactory.decodeStream(it, null, options)
+        }
+    } catch (_: Exception) {
         null
     }
 }
