@@ -4,11 +4,11 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.graphics.BitmapFactory
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -16,11 +16,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,39 +34,38 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Text
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Slider
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import dev.dozingduckling.besur.ui.theme.BesurTheme
-import androidx.core.net.toUri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class MainActivity : ComponentActivity()
-{
+class MainActivity : ComponentActivity() {
     private var music by mutableStateOf<List<Music>>(emptyList())
     private var currentSong by mutableStateOf<Music?>(null)
     private var isPlaying by mutableStateOf(false)
@@ -76,13 +75,14 @@ class MainActivity : ComponentActivity()
     private lateinit var musicRepository: MusicRepository
     private lateinit var player: ExoPlayer
 
-    private val musicPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission())
-    { granted ->
-        if (granted)
-        {
+    private val musicPermissionLauncher = registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
             loadMusic()
         }
     }
+
     private val progressHandler = Handler(Looper.getMainLooper())
     private val progressUpdater = object : Runnable {
         override fun run() {
@@ -92,8 +92,7 @@ class MainActivity : ComponentActivity()
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?)
-    {
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         enableEdgeToEdge()
@@ -151,36 +150,26 @@ class MainActivity : ComponentActivity()
         requestMusicPermission()
     }
 
-    private fun requestMusicPermission()
-    {
-        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-        {
+    private fun requestMusicPermission() {
+        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             Manifest.permission.READ_MEDIA_AUDIO
-        }
-        else
-        {
+        } else {
             Manifest.permission.READ_EXTERNAL_STORAGE
         }
 
-        if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED)
-        {
+        if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED) {
             loadMusic()
-        }
-        else
-        {
+        } else {
             musicPermissionLauncher.launch(permission)
         }
     }
 
-    private fun loadMusic()
-    {
+    private fun loadMusic() {
         music = musicRepository.getMusic()
     }
 
-    private fun playMusic(index: Int)
-    {
-        if (currentSong == music[index] && isPlaying)
-        {
+    private fun playMusic(index: Int) {
+        if (currentSong == music[index] && isPlaying) {
             return
         }
 
@@ -189,7 +178,7 @@ class MainActivity : ComponentActivity()
         player.setMediaItems(
                 music.map { song -> MediaItem.fromUri(song.uri) },
                 index,
-            0L
+                0L
         )
 
         player.prepare()
@@ -201,10 +190,8 @@ class MainActivity : ComponentActivity()
         progressHandler.post(progressUpdater)
     }
 
-    private fun playPreviousMusic()
-    {
-        if (player.hasPreviousMediaItem())
-        {
+    private fun playPreviousMusic() {
+        if (player.hasPreviousMediaItem()) {
             player.seekToPreviousMediaItem()
             player.play()
 
@@ -213,10 +200,8 @@ class MainActivity : ComponentActivity()
         }
     }
 
-    private fun playNextMusic()
-    {
-        if (player.hasNextMediaItem())
-        {
+    private fun playNextMusic() {
+        if (player.hasNextMediaItem()) {
             player.seekToNextMediaItem()
             player.play()
 
@@ -225,24 +210,19 @@ class MainActivity : ComponentActivity()
         }
     }
 
-    private fun togglePlayPause()
-    {
-        if (player.isPlaying)
-        {
+    private fun togglePlayPause() {
+        if (player.isPlaying) {
             player.pause()
             isPlaying = false
             progressHandler.removeCallbacks(progressUpdater)
-        }
-        else
-        {
+        } else {
             player.play()
             isPlaying = true
             progressHandler.post(progressUpdater)
         }
     }
 
-    override fun onDestroy()
-    {
+    override fun onDestroy() {
         progressHandler.removeCallbacks(progressUpdater)
         player.release()
         super.onDestroy()
@@ -290,6 +270,7 @@ fun MainScreen(
     }
 }
 
+// TODO: update album art to a better approch
 @Composable
 fun SongList(
     music: List<Music>,
@@ -306,8 +287,7 @@ fun SongList(
                     modifier = Modifier.clickable {
                         onSongClick(song)
                     }
-            )
-            {
+            ) {
                 val context = LocalContext.current
                 val albumArtThumbnail by produceState<Bitmap?>(
                         initialValue = null,
@@ -343,7 +323,6 @@ fun SongList(
                     Text(song.artist)
                 }
             }
-
         }
     }
 }
@@ -356,11 +335,12 @@ fun MiniPlayer(
     onNextClick: () -> Unit,
     onOpenPlayer: () -> Unit,
     modifier: Modifier = Modifier
-)
-{
+) {
     val context = LocalContext.current
 
-    val albumArt by produceState<Bitmap?>(initialValue = null, key1 = currentSong?.albumArtUri
+    val albumArt by produceState<Bitmap?>(
+            initialValue = null,
+            key1 = currentSong?.albumArtUri
     ) {
         value = withContext(Dispatchers.IO) {
             loadAlbumArtThumbnail(context, currentSong?.albumArtUri)
@@ -373,13 +353,11 @@ fun MiniPlayer(
                 .clip(RoundedCornerShape(10.dp))
                 .background(Color(0xFFDDDDDD))
                 .clickable { onOpenPlayer() }
-    )
-    {
+    ) {
         Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
-        )
-        {
+        ) {
             albumArt?.let {
                 Image(
                         bitmap = it.asImageBitmap(),
@@ -400,8 +378,7 @@ fun MiniPlayer(
                     modifier = Modifier
                         .weight(1f)
                         .padding(horizontal = 15.dp)
-            )
-            {
+            ) {
                 Text(
                         text = currentSong?.title ?: "Playing Nothing",
                         fontSize = 14.sp,
@@ -417,16 +394,13 @@ fun MiniPlayer(
                 )
             }
             Row(
-                    modifier = Modifier
-                        .width(100.dp),
+                    modifier = Modifier.width(100.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly
-            )
-            {
+            ) {
                 IconButton(
                         onClick = onPlayPauseClick,
                         modifier = Modifier.size(40.dp)
-                )
-                {
+                ) {
                     Icon(
                             modifier = Modifier
                                 .fillMaxWidth(0.7f)
@@ -441,8 +415,7 @@ fun MiniPlayer(
                 IconButton(
                         onClick = onNextClick,
                         modifier = Modifier.size(40.dp)
-                )
-                {
+                ) {
                     Icon(
                             modifier = Modifier
                                 .fillMaxWidth(0.7f)
@@ -455,8 +428,6 @@ fun MiniPlayer(
         }
     }
 }
-
-
 
 @Composable
 fun PlayerScreen(
@@ -488,12 +459,11 @@ fun PlayerScreen(
         ) {
             Icon(
                     painter = painterResource(R.drawable.ic_back),
-                    contentDescription = "Back",
+                    contentDescription = "Back"
             )
         }
         Spacer(modifier = Modifier.height(20.dp))
-        if (albumArt != null)
-        {
+        if (albumArt != null) {
             Image(
                     bitmap = albumArt.asImageBitmap(),
                     contentDescription = "Album artwork",
@@ -503,9 +473,7 @@ fun PlayerScreen(
                         .aspectRatio(1f)
                         .clip(RoundedCornerShape(10.dp))
             )
-        }
-        else
-        {
+        } else {
             Box(
                     modifier = Modifier
                         .fillMaxWidth(1f)
@@ -531,8 +499,7 @@ fun PlayerScreen(
                 fontSize = 17.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .fillMaxWidth()
+                modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.weight(1f))
         Slider(
@@ -546,11 +513,11 @@ fun PlayerScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                    formatTime(currentPosition),
+                    text = formatTime(currentPosition),
                     fontSize = 15.sp
             )
             Text(
-                    formatTime(duration),
+                    text = formatTime(duration),
                     fontSize = 15.sp
             )
         }
@@ -560,13 +527,11 @@ fun PlayerScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
-        )
-        {
+        ) {
             IconButton(
                     onClick = onPreviousClick,
                     modifier = Modifier.size(100.dp)
-            )
-            {
+            ) {
                 Icon(
                         modifier = Modifier
                             .fillMaxWidth(0.4f)
@@ -578,17 +543,14 @@ fun PlayerScreen(
             IconButton(
                     onClick = onPlayPauseClick,
                     modifier = Modifier.size(100.dp)
-            )
-            {
+            ) {
                 Icon(
                         modifier = Modifier
                             .fillMaxWidth(0.8f)
                             .aspectRatio(1f),
                         painter = painterResource(
-                                if (isPlaying)
-                                    R.drawable.ic_pause
-                                else
-                                    R.drawable.ic_play
+                                if (isPlaying) R.drawable.ic_pause
+                                else R.drawable.ic_play
                         ),
                         contentDescription = if (isPlaying) "Pause" else "Play"
                 )
@@ -596,8 +558,7 @@ fun PlayerScreen(
             IconButton(
                     onClick = onNextClick,
                     modifier = Modifier.size(100.dp)
-            )
-            {
+            ) {
                 Icon(
                         modifier = Modifier
                             .fillMaxWidth(0.4f)
@@ -611,8 +572,7 @@ fun PlayerScreen(
     }
 }
 
-fun formatTime(milliseconds: Long): String
-{
+fun formatTime(milliseconds: Long): String {
     val totalSeconds = milliseconds / 1000
     val minutes = totalSeconds / 60
     val seconds = totalSeconds % 60
@@ -620,19 +580,14 @@ fun formatTime(milliseconds: Long): String
     return "%d:%02d".format(minutes, seconds)
 }
 
-fun loadAlbumArt(context: Context, uri: String?): Bitmap?
-{
-    if (uri == null)
-        return null
+fun loadAlbumArt(context: Context, uri: String?): Bitmap? {
+    if (uri == null) return null
 
-    return try
-    {
+    return try {
         context.contentResolver.openInputStream(uri.toUri())?.use {
             BitmapFactory.decodeStream(it)
         }
-    }
-    catch (_: Exception)
-    {
+    } catch (_: Exception) {
         null
     }
 }
@@ -674,8 +629,7 @@ fun loadAlbumArtThumbnail(context: Context, uri: String?): Bitmap? {
         device = "spec:width=1080px,height=2222px,dpi=416"
 )
 @Composable
-fun MainScreenPreview()
-{
+fun MainScreenPreview() {
     BesurTheme {
         MainScreen(
                 music = listOf(
@@ -744,8 +698,7 @@ fun MainScreenPreview()
         device = "spec:width=1080px,height=2222px,dpi=416"
 )
 @Composable
-fun PlayerScreenPreview()
-{
+fun PlayerScreenPreview() {
     BesurTheme {
         PlayerScreen(
                 currentSong = Music(
